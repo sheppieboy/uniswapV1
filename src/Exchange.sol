@@ -22,6 +22,20 @@ contract Exchange {
         return IERC20(tokenAddress).balanceOf(address(this));
     }
 
+    function getTokenAmount(uint256 _ethSold) public view returns(uint256){
+        require(_ethSold > 0, "_ethSold is too small");
+        uint256 tokenReserve = getReserve();
+
+        return getAmount(_ethSold, address(this).balance, tokenReserve);
+    }
+
+    function getEthAmount(uint256 _tokenSold) public view returns(uint256){
+        require(_tokenSold > 0, "tokenSold is too small");
+
+        uint256 tokenReserve = getReserve();
+
+        return getAmount(_tokenSold, tokenReserve, address(this).balance);
+    }
 
     //change in x is input amount
     //change in y is output amount, or the return value
