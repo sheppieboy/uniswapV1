@@ -5,6 +5,10 @@ pragma solidity ^0.8.0;
 import {IERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {ERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 
+interface IFactory {
+    function getExchange(address _tokenAddress) external returns(address);
+}
+
 contract Exchange is ERC20 {
     address public tokenAddress;
     address public factoryAddress;
@@ -76,6 +80,18 @@ contract Exchange is ERC20 {
         IERC20(tokenAddress).transferFrom(msg.sender, address(this), _tokensSold);
 
         payable(msg.sender).transfer(ethBought);
+    }
+
+    function tokenToTokenSwap(uint256 _tokensSold, uint256 _minTokensBought, address _tokenAddress) public {
+        address exchangeAddress = IFactory(factoryAddress).getExchange(_tokenAddress);
+        require(exchangeAddress != address(this) && exchangeAddress != address(0), "invalid exchange address");
+
+        uint256 tokenReserve = getReserve();
+        uint256 ethBought = getAmount(_tokensSold, tokenReserve, address(this).balance);
+
+        IERC20(tokenAddress).transferFrom(msg.sender, address(this), _tokensSold);
+
+        IExchange(exchangeAddress).ethToTokenSwap{value: ethBought}(_minTokensBought);
     }
 
     //change in x is input amount
