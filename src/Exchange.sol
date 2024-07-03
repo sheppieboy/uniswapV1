@@ -88,4 +88,17 @@ contract Exchange is ERC20 {
         uint256 denominator = (inputReserve * 100) + inputAmountWithFee;
         return numerator/denominator;
     }
+
+    function removeLiquidity(uint256 _amount) public returns (uint256, uint256){
+        require(_amount > 0);
+
+        uint256 ethAmount = (address(this).balance * _amount) /totalSupply();
+        uint256 tokenAmount = (getReserve() * _amount)/totalSupply();
+
+        _burn(msg.sender, _amount);
+        payable(msg.sender).transfer(ethAmount);
+        IERC20(tokenAddress).transfer(msg.sender, tokenAmount);
+
+        return (ethAmount, tokenAmount);
+    }
 }
