@@ -9,6 +9,10 @@ interface IFactory {
     function getExchange(address _tokenAddress) external returns(address);
 }
 
+interface IExchange {
+    function ethToTokenTransfer(uint256 _minTokens, address _recipient) external payable;
+}
+
 contract Exchange is ERC20 {
     address public tokenAddress;
     address public factoryAddress;
@@ -63,12 +67,11 @@ contract Exchange is ERC20 {
     }
 
     function ethToTokenSwap(uint256 _minTokens) public payable {
-        uint256 tokenReserve = getReserve();
-        uint256 tokensBought = getAmount(msg.value, address(this).balance - msg.value, tokenReserve);
+        _ethToToken(_minTokens, msg.sender);
+    }
 
-        require(tokensBought >= _minTokens, "insufficient output amount");
-
-        IERC20(tokenAddress).transfer(msg.sender, tokensBought);
+    function ethToTokenTransfer(uint256 _minTokens, address _recipient) public payable {
+        _ethToToken(_minTokens, _recipient);
     }
 
     function tokenToEtherSwap(uint256 _tokensSold, uint256 _minEth) public payable {
@@ -91,7 +94,7 @@ contract Exchange is ERC20 {
 
         IERC20(tokenAddress).transferFrom(msg.sender, address(this), _tokensSold);
 
-        IExchange(exchangeAddress).ethToTokenSwap{value: ethBought}(_minTokensBought);
+        IExchange(exchangeAddress).ethToTokenTransfer{value: ethBought}(_minTokensBought, msg.sender);
     }
 
     //change in x is input amount
@@ -105,6 +108,15 @@ contract Exchange is ERC20 {
         uint256 numerator = inputAmountWithFee * outputReserve;
         uint256 denominator = (inputReserve * 100) + inputAmountWithFee;
         return numerator/denominator;
+    }
+
+    function _ethToToken(uint256 _minTokens, address _recipient) private {
+        uint256 tokenReserve = getReserve();
+        uint256 tokensBought = getAmount(msg.value, address(this).balance - msg.value, tokenReserve);
+
+        require(tokensBought >= _minTokens, "insufficient output amount");
+
+        IERC20(tokenAddress).transfer(_recipient, tokensBought);
     }
 
     function removeLiquidity(uint256 _amount) public returns (uint256, uint256){
