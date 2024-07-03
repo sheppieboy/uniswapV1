@@ -5,19 +5,18 @@ import {Test, console} from "forge-std/Test.sol";
 import {Token} from "../src/Token.sol";
 import {Exchange} from "../src/Exchange.sol";
 
-contract AddLiquidityTest is Test {
+contract ExchangeTest is Test {
     Token token;
     Exchange exchange;
 
     function setUp() public {
-        // new test token
+        
+        // new test token, testcontract now has 1000 tokens
         token = new Token("TestToken", "TST", 1000 ether);
 
         //new exchange between token and eth
         exchange = new Exchange(address(token));
 
-        //send some tokens to this test contract for testing
-        token.transfer(address(this), 200 ether);
     }
 
     function test_AddLiquidity() public {
@@ -42,7 +41,7 @@ contract AddLiquidityTest is Test {
         //token amount for 1 eth
         uint256 tokensOut = exchange.getTokenAmount(1 ether);
 
-        assertEq(tokensOut, 1980198019801980198);
+        assertEq(tokensOut, 1960590157441330824);
     }
 
     function test_GetEthAmount() public {
@@ -53,7 +52,7 @@ contract AddLiquidityTest is Test {
         //eth amount for 2 tokens
         uint256 ethOut = exchange.getEthAmount(2 ether);
 
-        assertEq(ethOut, 990099009900990099);
+        assertEq(ethOut, 980295078720665412);
     }
 }
 
