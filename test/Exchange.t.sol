@@ -33,4 +33,27 @@ contract AddLiquidityTest is Test {
         //check exchange has 200 tokens
         assertEq(exchange.getReserve(), 200 ether);
     }
+
+    function test_GetTokenAmount() public {
+        token.approve(address(exchange), 200 ether);
+
+        exchange.addLiquidity{value: 100 ether}(200 ether);
+
+        //token amount for 1 eth
+        uint256 tokensOut = exchange.getTokenAmount(1 ether);
+
+        assertEq(tokensOut, 1980198019801980198);
+    }
+
+    function test_GetEthAmount() public {
+        token.approve(address(exchange), 200 ether);
+
+        exchange.addLiquidity{value: 100 ether}(200 ether);
+
+        //eth amount for 2 tokens
+        uint256 ethOut = exchange.getEthAmount(2 ether);
+
+        assertEq(ethOut, 990099009900990099);
+    }
 }
+
